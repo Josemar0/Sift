@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sift — Close the loop, not the tab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F6F0;
+    --ink:#1B2420;
+    --ink-soft:#4B5650;
+    --sage:#3F6659;
+    --coral:#C85C42;
+    --gold:#C99A3E;
+    --blue:#4A7FA5;
+    --line:#DBD8CC;
+    --card:#FFFFFF;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#181D1A; --ink:#EDEFE9; --ink-soft:#AEB6AE; --card:#212823; --line:#333B34;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#181D1A; --ink:#EDEFE9; --ink-soft:#AEB6AE; --card:#212823; --line:#333B34;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-padding-top:env(safe-area-inset-top,0px); scroll-behavior:smooth}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'Space Grotesk',sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;line-height:1.12}
+  section{padding:240px 0}
+  section + section{border-top:1px solid var(--line)}
+  p{max-width:60ch;color:var(--ink-soft)}
+  .lede{font-size:1.15rem;max-width:52ch}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* nav */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;max-width:1040px;margin:0 auto}
+  .mark{font-family:'Fraunces',serif;font-size:1.25rem;letter-spacing:.01em}
+  .mark span{color:var(--sage)}
+  nav a{color:var(--ink);text-decoration:none;font-size:.92rem;border:1px solid var(--line);padding:8px 16px;border-radius:100px}
+
+  /* hero */
+  .hero{padding-top:56px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .hero h1{font-size:clamp(2.1rem,4vw,3.1rem);max-width:14ch}
+  .hero p{margin-top:20px}
+  .cta{display:inline-block;margin-top:32px;background:var(--sage);color:#fff;text-decoration:none;
+       padding:14px 26px;border-radius:8px;font-size:.98rem;font-weight:500}
+  .cta:focus-visible, a:focus-visible, summary:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+  /* browser mock */
+  .browser{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+  .chrome{display:flex;gap:6px;align-items:center;padding:10px 12px;background:var(--paper);border-bottom:1px solid var(--line)}
+  .tab{font-size:.72rem;padding:6px 10px;border-radius:6px 6px 0 0;background:var(--card);border:1px solid var(--line);
+       border-bottom:none;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:74px}
+  .tab.dup{border-top:2px solid var(--coral)}
+  .chrome-icon{margin-left:auto;width:10px;height:10px;border-radius:50%;background:var(--coral);flex:none}
+  .body-mock{padding:22px}
+  .body-mock .group{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;font-size:.82rem}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .count{margin-left:auto;color:var(--ink-soft);font-size:.78rem}
+
+  /* problem grid */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:44px}
+  .reason{border-top:2px solid var(--sage);padding-top:16px}
+  .reason h3{font-size:1.15rem;margin-bottom:8px;font-weight:500}
+
+  /* cost */
+  .cost-row{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;align-items:center;margin-top:40px}
+  .gauge{border:1px solid var(--line);border-radius:10px;padding:20px;background:var(--card)}
+  .gauge-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-soft);margin-bottom:6px}
+  .gauge-track{height:10px;border-radius:100px;background:var(--paper);border:1px solid var(--line);overflow:hidden;margin-bottom:18px}
+  .gauge-fill{height:100%;border-radius:100px}
+  .g1{width:22%;background:var(--sage)}
+  .g2{width:78%;background:var(--coral)}
+
+  /* one-liner */
+  .oneliner{font-size:1.3rem;font-family:'Fraunces',serif;max-width:22ch;font-weight:500}
+
+  /* features as tab-group strips */
+  .feature{border:1px solid var(--line);border-radius:10px;background:var(--card);margin-bottom:14px;overflow:hidden}
+  .feature summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:16px 18px;font-size:1rem}
+  .feature summary::-webkit-details-marker{display:none}
+  .feature summary .dot{width:11px;height:11px}
+  .feature summary .chev{margin-left:auto;color:var(--ink-soft);font-size:.85rem;transition:transform .15s}
+  .feature[open] summary .chev{transform:rotate(90deg)}
+  .feature .content{padding:0 18px 20px 43px}
+  .feature .content p{max-width:56ch}
+
+  /* non-intrusive icon + dropdown */
+  #quiet{position:relative}
+  .quiet-anchor{position:absolute;top:0;right:24px}
+  .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);
+            display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+            transition:background-color .2s,border-color .2s}
+  .icon-btn:hover{border-color:var(--coral)}
+  .icon-btn .icon-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-soft);transition:background-color .2s}
+  .icon-btn.active{background:var(--coral);border-color:var(--coral)}
+  .icon-btn.active .icon-dot{background:#fff}
+  .panel-wrap{position:absolute;top:46px;right:0;width:270px;opacity:0;transform:translateY(-6px);
+              pointer-events:none;transition:opacity .22s ease,transform .22s ease}
+  .panel-wrap.open{opacity:1;transform:translateY(0);pointer-events:auto}
+  .panel{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:6px;
+         box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .row{display:flex;align-items:center;gap:10px;padding:12px 12px;border-bottom:1px solid var(--line);font-size:.85rem}
+  .row:last-child{border-bottom:none}
+  .row .label{flex:1;color:var(--ink)}
+  .row .sub{display:block;font-size:.72rem;color:var(--ink-soft)}
+  .btn-mini{border:1px solid var(--line);background:transparent;color:var(--ink);font-size:.72rem;
+            padding:6px 12px;border-radius:6px;font-family:inherit}
+  .btn-mini.coral{border-color:var(--coral);color:var(--coral)}
+  .btn-mini.gold{border-color:var(--gold);color:var(--gold)}
+
+  /* reassure */
+  ul.reassure{list-style:none;margin-top:32px;display:grid;gap:16px}
+  ul.reassure li{display:flex;gap:12px;max-width:56ch;color:var(--ink-soft)}
+  ul.reassure li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--sage);margin-top:8px;flex:none}
+
+  /* final cta */
+  .final{text-align:left}
+  .final h2{font-size:clamp(1.8rem,3.4vw,2.5rem);max-width:16ch}
+
+  footer{padding:32px 24px;font-size:.78rem;color:var(--ink-soft);text-align:center}
+
+  @media (max-width:760px){
+    .hero{grid-template-columns:1fr}
+    .grid2{grid-template-columns:1fr}
+    .cost-row{grid-template-columns:1fr}
+    .quiet-anchor{right:16px}
+    .panel-wrap{width:calc(100vw - 64px);right:0}
+    section{padding:148px 0}
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    .feature summary .chev{transition:none}
+    .panel-wrap, .panel, .icon-btn, .icon-btn .icon-dot{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="mark">Sift<span>.</span></div>
+  <a href="#cta">Get Sift</a>
+</nav>
+
+<section class="hero wrap">
+  <div>
+    <h1>Forty tabs open. Twelve are the same page.</h1>
+    <p class="lede">Sift automatically groups, archives, and clears duplicate tabs — without ever making it feel like you gave up on something.</p>
+    <a class="cta" href="#cta">Get now</a>
+  </div>
+  <div class="browser" aria-hidden="true">
+    <div class="chrome">
+      <div class="tab">Untitled</div>
+      <div class="tab dup">Docs</div>
+      <div class="tab">Gmail</div>
+      <div class="tab dup">Docs</div>
+      <div class="tab">Figma</div>
+      <div class="tab dup">Gmail</div>
+      <div class="chrome-icon"></div>
+    </div>
+    <div class="body-mock">
+      <div class="group"><span class="dot" style="background:var(--blue)"></span> Research <span class="count">6 tabs</span></div>
+      <div class="group"><span class="dot" style="background:var(--gold)"></span> Not opened in 9 days <span class="count">4 tabs</span></div>
+      <div class="group"><span class="dot" style="background:var(--coral)"></span> Duplicates found <span class="count">3 tabs</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="solution">
+  <h2>Sift clears the clutter, not the task</h2>
+  <p style="margin-top:14px">Nothing is deleted outright. Tabs are archived, not thrown away, and Sift runs inside the browser you already use — no switch required.</p>
+</section>
+
+<section class="wrap" id="how">
+  <h2>How it works</h2>
+  <div style="margin-top:40px">
+    <details class="feature" open>
+      <summary><span class="dot" style="background:var(--coral)"></span> Duplicate detection <span class="chev">▸</span></summary>
+      <div class="content"><p>Sift compares a tab's URL, title, and page content — so it catches copies even when one has been sitting idle, or you've been logged out of the page.</p></div>
+    </details>
+    <details class="feature">
+      <summary><span class="dot" style="background:var(--blue)"></span> Smart grouping <span class="chev">▸</span></summary>
+      <div class="content"><p>Tabs with related content are grouped automatically. Groups are color-coded and collapsible, so a dozen tabs on one topic take up the space of one.</p></div>
+    </details>
+    <details class="feature">
+      <summary><span class="dot" style="background:var(--gold)"></span> Usage-based archiving <span class="chev">▸</span></summary>
+      <div class="content"><p>Sift watches when a tab was last opened, for how long, and how often. Ones that have gone quiet are flagged to archive — never deleted outright.</p></div>
+    </details>
+    <details class="feature">
+      <summary><span class="dot" style="background:var(--sage)"></span> Pattern learning <span class="chev">▸</span></summary>
+      <div class="content"><p>Sift notices which tabs you tend to open together and starts grouping them on its own. The longer you use it, the more it fits how you actually work.</p></div>
+    </details>
+  </div>
+</section>
+
+<section class="wrap" id="quiet">
+  <div class="quiet-anchor">
+    <button class="icon-btn" id="sift-icon" type="button" aria-expanded="false" aria-controls="sift-panel">
+      <span class="icon-dot"></span>
+      <span class="sr-only">Toggle Sift suggestions</span>
+    </button>
+    <div class="panel-wrap" id="sift-panel">
+      <div class="panel">
+        <div class="row">
+          <div class="label">3 duplicate tabs found<span class="sub">Docs, Docs, Gmail</span></div>
+          <button class="btn-mini coral">Close</button>
+        </div>
+        <div class="row">
+          <div class="label">Not opened in 9 days<span class="sub">4 tabs</span></div>
+          <button class="btn-mini gold">Archive</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <h2>Quiet until it has something to say</h2>
+  <p class="lede" style="margin-top:14px">A small icon sits in your browser header. It changes color only when Sift has a suggestion — try clicking it.</p>
+</section>
+
+<script>
+  (function(){
+    var icon = document.getElementById('sift-icon');
+    var panel = document.getElementById('sift-panel');
+    icon.addEventListener('click', function(){
+      var open = panel.classList.toggle('open');
+      icon.classList.toggle('active', open);
+      icon.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e){
+      if (!panel.contains(e.target) && e.target !== icon && !icon.contains(e.target)){
+        panel.classList.remove('open');
+        icon.classList.remove('active');
+        icon.setAttribute('aria-expanded', 'false');
+      }
+    });
+  })();
+</script>
+
+<section class="wrap" id="trust">
+  <h2>Built to be trusted with your tabs</h2>
+  <ul class="reassure">
+    <li>Works inside the browser you already use — no new browser to switch to.</li>
+    <li>Archived isn't deleted. Everything stays one click from where you left it.</li>
+    <li>Learns your habits, so no two people end up with the same groups.</li>
+  </ul>
+</section>
+
+<section class="wrap" id="problem">
+  <h2>Every tab is an unfinished task</h2>
+  <div class="grid2">
+    <div class="reason">
+      <h3>Closing one feels like quitting</h3>
+      <p>Tabs stand in for pending work. Closing them reads as giving up on the task, so people keep dozens open just as a reminder that it isn't done yet.</p>
+    </div>
+    <div class="reason">
+      <h3>You can only track about seven at once</h3>
+      <p>Working memory holds roughly four to seven items. Past that count, you lose track of what's already open — and open the same page again.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="cost">
+  <h2>More tabs, less speed</h2>
+  <div class="cost-row">
+    <p class="oneliner">Every open tab holds memory. More memory used means a slower machine — and a slower you.</p>
+    <div class="gauge" aria-hidden="true">
+      <div class="gauge-label"><span>6 tabs open</span><span>Memory used</span></div>
+      <div class="gauge-track"><div class="gauge-fill g1"></div></div>
+      <div class="gauge-label"><span>40 tabs open</span><span>Memory used</span></div>
+      <div class="gauge-track"><div class="gauge-fill g2"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="who">
+  <h2>Who this affects</h2>
+  <p style="margin-top:14px" class="lede">If you use a computer, you've felt this. Disorganization and a dislike of leaving things unfinished both end the same way — more tabs than you meant to keep.</p>
+</section>
+
+<section class="wrap final" id="cta">
+  <h2>Close the loop, not the tab.</h2>
+  <a class="cta" href="#">Get Sift</a>
+</section>
+
+<footer>Sift — automatic tab decluttering.</footer>
+
+</body>
+</html>
